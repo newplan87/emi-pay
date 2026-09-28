@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>EMI Pay — Create payment</title>
+  <title>EMI Pay — Checkout</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -14,42 +14,36 @@
         <div class="hero-row">
           <div class="mark">E</div>
           <div>
-            <p class="eyebrow">Your checkout</p>
+            <p class="eyebrow">After purchase</p>
             <h1>EMI Pay</h1>
           </div>
         </div>
-        <p class="hero-copy">Amount daalo, payment link banao. Customer UPI / QR se pay karega. OTP ya UPI PIN mat maango.</p>
+        <p class="hero-copy">
+          Amount yahan type nahi hota. Product price tumhari website pe hai.
+          Buy ke baad customer is checkout pe aata hai — UPI / QR se pay.
+        </p>
       </header>
-      <form id="form" class="body">
-        <label>
-          <span>Amount (₹)</span>
-          <input id="amount" inputmode="decimal" placeholder="e.g. 1500" autocomplete="off" required />
-        </label>
-        <label>
-          <span>Reference (optional)</span>
-          <input id="ref" placeholder="Order / EMI ID / name" autocomplete="off" />
-        </label>
-        <p id="err" class="err" hidden></p>
-        <button type="submit" class="btn-primary">Generate payment link</button>
-        <p class="hint">Paisa Paytm UPI ID pe jayega jo config.js mein set hai.</p>
-      </form>
-      <section class="body" style="padding-top:0">
-        <p class="section-title">Apni website pe</p>
-        <p class="hint">Har payment ka amount alag ho sakta hai — input se ya JS se jo ₹ bhejo, UPI pe wahi jayega.</p>
+      <div class="body">
+        <p class="section-title">Tumhari site pe (Buy button)</p>
+        <p class="hint">Price + order id apne cart/order se bhejo. Gateway amount create nahi karta.</p>
         <div class="url-box" id="embedBox" style="white-space:pre-wrap;font-size:11px"></div>
-      </section>
-      <section id="result" class="result" hidden>
-        <p class="result-title">Customer link · <strong id="amtLabel"></strong></p>
-        <div id="outUrl" class="url-box"></div>
-        <div class="row-btns">
-          <button type="button" id="copyBtn" class="btn-ghost">Copy link</button>
-          <a id="previewBtn" class="btn-ghost" href="#" target="_blank" rel="noopener">Open pay page</a>
+        <p class="hint" style="margin-top:14px">Direct link example:</p>
+        <div class="url-box" style="font-size:11px">
+          https://newplan87.github.io/emi-pay/pay.html?am=PRICE&amp;ref=ORDER_ID
         </div>
-      </section>
+        <p class="hint">Demo shop: <a href="my-site.html">my-site.html</a></p>
+      </div>
     </div>
-    <footer class="foot">EMI Pay · UPI checkout · Not a bank / NBFC collection desk</footer>
+    <footer class="foot">EMI Pay · amount comes from your product page</footer>
   </main>
-  <script src="config.js"></script>
-  <script src="create.js"></script>
+  <script>
+    var origin = location.origin + location.pathname.replace(/[^/]+$/, "");
+    document.getElementById("embedBox").textContent =
+      '<script src="' + origin + 'checkout.js"><\/script>\n\n' +
+      '// product price from YOUR site, not this gateway\n' +
+      'var price = 2499.00;      // cart total\n' +
+      'var orderId = "ORD-991";  // your order id\n' +
+      'EmiPay.open({ amount: price, ref: orderId });';
+  </script>
 </body>
 </html>

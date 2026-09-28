@@ -3,43 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My site — Pay with EMI Pay</title>
+  <title>Shop — Pay with EMI Pay</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 48px auto; padding: 0 16px; }
-    label { display: block; margin: 12px 0 6px; font-size: 13px; font-weight: 600; }
-    input {
-      width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #cbd5e1;
-      border-radius: 10px; font-size: 16px;
+    body { font-family: system-ui, sans-serif; max-width: 440px; margin: 40px auto; padding: 0 16px; color: #0f172a; }
+    h1 { font-size: 22px; }
+    .product {
+      border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin: 12px 0;
     }
+    .price { font-size: 20px; font-weight: 800; margin: 6px 0 12px; }
     button {
-      width: 100%; margin-top: 16px; padding: 14px; border: 0; border-radius: 12px;
-      background: #00baf2; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer;
+      width: 100%; padding: 12px; border: 0; border-radius: 12px;
+      background: #00baf2; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer;
     }
     p { color: #64748b; font-size: 14px; }
-    .err { color: #b91c1c; font-size: 13px; min-height: 1.2em; }
   </style>
 </head>
 <body>
-  <h1>Your website</h1>
-  <p>Har order ka amount alag ho sakta hai — jo ₹ yahan daalo, checkout pe wahi aayega.</p>
-  <label for="amt">Amount (₹)</label>
-  <input id="amt" inputmode="decimal" value="1500" />
-  <label for="ref">Reference</label>
-  <input id="ref" value="WEB-001" />
-  <p class="err" id="err"></p>
-  <button type="button" id="payBtn">Pay this amount</button>
+  <h1>Demo shop</h1>
+  <p>Price yahan fix hai. Buy → EMI Pay checkout (amount create nahi).</p>
+
+  <article class="product">
+    <strong>Plan A</strong>
+    <div class="price">₹799.00</div>
+    <button type="button" data-price="799" data-sku="PLAN-A">Buy Plan A</button>
+  </article>
+  <article class="product">
+    <strong>Plan B</strong>
+    <div class="price">₹2,499.00</div>
+    <button type="button" data-price="2499" data-sku="PLAN-B">Buy Plan B</button>
+  </article>
+  <article class="product">
+    <strong>Plan C</strong>
+    <div class="price">₹12,000.00</div>
+    <button type="button" data-price="12000" data-sku="PLAN-C">Buy Plan C</button>
+  </article>
+
   <script src="checkout.js"></script>
   <script>
-    document.getElementById("payBtn").addEventListener("click", function () {
-      document.getElementById("err").textContent = "";
-      try {
+    document.querySelectorAll("[data-price]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var orderId = btn.getAttribute("data-sku") + "-" + Date.now();
         EmiPay.open({
-          amount: document.getElementById("amt").value,
-          ref: document.getElementById("ref").value,
+          amount: btn.getAttribute("data-price"),
+          ref: orderId,
         });
-      } catch (e) {
-        document.getElementById("err").textContent = e.message || "Valid amount daalo";
-      }
+      });
     });
   </script>
 </body>
