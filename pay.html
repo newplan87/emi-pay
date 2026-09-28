@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EMI Pay — Pay with UPI</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="qrcode.min.js"></script>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card" id="payCard">
+      <header class="hero">
+        <p class="eyebrow">Pay to</p>
+        <h1 id="payeeName">EMI Pay</h1>
+        <p class="amount" id="amountDisplay">—</p>
+        <p class="ref-line" id="refLine" hidden></p>
+        <p class="hero-copy">UPI app kholo ya QR scan karo. PIN / OTP kisi ko mat batao.</p>
+      </header>
+      <div class="tabs">
+        <button type="button" class="tab active" data-tab="upi">UPI Apps</button>
+        <button type="button" class="tab" data-tab="qr">Scan QR</button>
+      </div>
+      <div class="body" id="panelUpi">
+        <p class="section-title">Choose app</p>
+        <div class="apps">
+          <a id="btnPhonepe" class="app" href="#"><span class="app-icon phonepe">Pe</span> PhonePe</a>
+          <a id="btnPaytm" class="app" href="#"><span class="app-icon paytm">Pay</span> Paytm</a>
+        </div>
+        <a id="btnPrimary" class="btn-primary block" href="#">Pay with PhonePe</a>
+        <div class="or">OR copy UPI ID</div>
+        <div class="vpa-row">
+          <code id="vpaText"></code>
+          <button type="button" id="copyVpa" class="btn-mini">Copy</button>
+        </div>
+      </div>
+      <div class="body" id="panelQr" hidden>
+        <p class="section-title">Scan to pay</p>
+        <p class="hint center">Any UPI app</p>
+        <div class="qr-wrap"><div id="qr"></div></div>
+        <a id="btnOpenUpi" class="btn-primary block" href="#">Open UPI app</a>
+      </div>
+      <div class="meta">
+        <div><span>Payee</span><strong id="metaName">EMI Pay</strong></div>
+        <div><span>UPI ID</span><strong id="metaVpa"></strong></div>
+      </div>
+      <footer class="pay-foot">
+        Static UPI checkout. Payment success is confirmed in your UPI app / bank SMS — this page does not auto-verify.
+      </footer>
+    </div>
+    <div class="card" id="errCard" hidden>
+      <div class="body">
+        <p class="err">Amount missing. Open a link with ?am=1500.00</p>
+        <a class="btn-ghost" href="./" style="margin-top:12px;display:block;text-align:center">Back</a>
+      </div>
+    </div>
+  </main>
+  <script src="config.js"></script>
+  <script src="pay.js"></script>
+</body>
+</html>

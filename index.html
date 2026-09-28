@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EMI Pay — Create payment</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <header class="hero">
+        <div class="hero-row">
+          <div class="mark">E</div>
+          <div>
+            <p class="eyebrow">Your checkout</p>
+            <h1>EMI Pay</h1>
+          </div>
+        </div>
+        <p class="hero-copy">Amount daalo, payment link banao. Customer UPI / QR se pay karega. OTP ya UPI PIN mat maango.</p>
+      </header>
+      <form id="form" class="body">
+        <label>
+          <span>Amount (₹)</span>
+          <input id="amount" inputmode="decimal" placeholder="e.g. 1500" autocomplete="off" required />
+        </label>
+        <label>
+          <span>Reference (optional)</span>
+          <input id="ref" placeholder="Order / EMI ID / name" autocomplete="off" />
+        </label>
+        <p id="err" class="err" hidden></p>
+        <button type="submit" class="btn-primary">Generate payment link</button>
+        <p class="hint">Paisa Paytm UPI ID pe jayega jo config.js mein set hai.</p>
+      </form>
+      <section class="body" style="padding-top:0">
+        <p class="section-title">Apni website pe</p>
+        <p class="hint">Har payment ka amount alag ho sakta hai — input se ya JS se jo ₹ bhejo, UPI pe wahi jayega.</p>
+        <div class="url-box" id="embedBox" style="white-space:pre-wrap;font-size:11px"></div>
+      </section>
+      <section id="result" class="result" hidden>
+        <p class="result-title">Customer link · <strong id="amtLabel"></strong></p>
+        <div id="outUrl" class="url-box"></div>
+        <div class="row-btns">
+          <button type="button" id="copyBtn" class="btn-ghost">Copy link</button>
+          <a id="previewBtn" class="btn-ghost" href="#" target="_blank" rel="noopener">Open pay page</a>
+        </div>
+      </section>
+    </div>
+    <footer class="foot">EMI Pay · UPI checkout · Not a bank / NBFC collection desk</footer>
+  </main>
+  <script src="config.js"></script>
+  <script src="create.js"></script>
+</body>
+</html>

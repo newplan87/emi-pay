@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My site — Pay with EMI Pay</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 48px auto; padding: 0 16px; }
+    label { display: block; margin: 12px 0 6px; font-size: 13px; font-weight: 600; }
+    input {
+      width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #cbd5e1;
+      border-radius: 10px; font-size: 16px;
+    }
+    button {
+      width: 100%; margin-top: 16px; padding: 14px; border: 0; border-radius: 12px;
+      background: #00baf2; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer;
+    }
+    p { color: #64748b; font-size: 14px; }
+    .err { color: #b91c1c; font-size: 13px; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <h1>Your website</h1>
+  <p>Har order ka amount alag ho sakta hai — jo ₹ yahan daalo, checkout pe wahi aayega.</p>
+  <label for="amt">Amount (₹)</label>
+  <input id="amt" inputmode="decimal" value="1500" />
+  <label for="ref">Reference</label>
+  <input id="ref" value="WEB-001" />
+  <p class="err" id="err"></p>
+  <button type="button" id="payBtn">Pay this amount</button>
+  <script src="checkout.js"></script>
+  <script>
+    document.getElementById("payBtn").addEventListener("click", function () {
+      document.getElementById("err").textContent = "";
+      try {
+        EmiPay.open({
+          amount: document.getElementById("amt").value,
+          ref: document.getElementById("ref").value,
+        });
+      } catch (e) {
+        document.getElementById("err").textContent = e.message || "Valid amount daalo";
+      }
+    });
+  </script>
+</body>
+</html>
