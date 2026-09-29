@@ -17,6 +17,7 @@
   }
 
   const am = amount.toFixed(2);
+  const paise = Math.round(amount * 100);
   const amountLabel =
     "₹" + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -35,7 +36,6 @@
     refLine.textContent = bits.join(" · ");
   }
 
-  // ASCII hyphen only — em dash breaks some UPI apps
   let tn = ref ? "EMI Pay - " + ref : "EMI Pay";
   if (tn.length > 50) tn = tn.slice(0, 50);
 
@@ -50,67 +50,91 @@
   const isAndroid = /android/i.test(ua);
   const isIOS = /iphone|ipad|ipod/i.test(ua);
   const isMobile = isAndroid || isIOS || /mobile/i.test(ua);
+  const inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|; wv|WebView/i.test(ua);
 
-  // PhonePe: Chrome Android needs intent:// + package. Custom phonepe:// often does nothing.
-  const phonepePay = "phonepe://pay?" + q;
-  const phonepeUpi = "phonepe://upi/pay?" + q;
-  const phonepeIntent =
-    "intent://pay?" + q + "#Intent;scheme=phonepe;package=com.phonepe.app;end";
-  const phonepeUpiIntent =
+  function b64utf8(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  // Same PhonePe Android handler that already works on the main gateway pay page
+  const phonepeNativePayload = {
+    contact: { cbsName: pn, nickName: pn, vpa: vpa, type: "VPA" },
+    p2pPaymentCheckoutParams: {
+      note: tn,
+      isByDefaultKnownContact: true,
+      enableSpeechToText: false,
+      allowAmountEdit: false,
+      showQrCodeOption: false,
+      disableViewHistory: true,
+      shouldShowUnsavedContactBanner: false,
+      isRecurring: false,
+      checkoutType: "DEFAULT",
+      transactionContext: "p2p",
+      initialAmount: paise,
+      disableNotesEdit: true,
+      showKeyboard: true,
+      currency: "INR",
+      shouldShowMaskedNumber: true,
+    },
+  };
+  const phonepeNative =
+    "phonepe://native?data=" +
+    encodeURIComponent(b64utf8(JSON.stringify(phonepeNativePayload))) +
+    "&id=p2ppayment";
+
+  const phonepeIos = "phonepe://upi/pay?" + q;
+  const phonepeAndroidIntent =
     "intent://pay?" + q + "#Intent;scheme=upi;package=com.phonepe.app;end";
 
-  const paytmDeep =
-    "paytmmp://cash_wallet?" + q + "&featuretype=money_transfer";
+  const paytmDeep = "paytmmp://cash_wallet?" + q + "&featuretype=money_transfer";
   const paytmIntent =
     "intent://cash_wallet?" + q +
     "&featuretype=money_transfer#Intent;scheme=paytmmp;package=net.one97.paytm;end";
 
-  const phonepeChain = isAndroid
-    ? [phonepeIntent, phonepeUpiIntent, phonepePay, phonepeUpi, upiPay]
-    : [phonepePay, phonepeUpi, upiPay];
-
-  const paytmChain = isAndroid
-    ? [paytmIntent, paytmDeep, upiPay]
-    : [paytmDeep, upiPay];
+  const phonepeHref = isAndroid ? phonepeNative : phonepeIos;
+  const paytmHref = isAndroid ? paytmIntent : paytmDeep;
 
   const hint = document.getElementById("appHint");
-  if (hint && !isMobile) {
-    hint.hidden = false;
-  }
-
-  function launchChain(urls) {
-    var i = 0;
-    var started = Date.now();
-    function next() {
-      if (document.hidden) return;
-      if (i >= urls.length) return;
-      if (Date.now() - started > 5000) return;
-      window.location.href = urls[i++];
-      setTimeout(next, 1100);
+  if (hint) {
+    if (!isMobile) {
+      hint.hidden = false;
+      hint.textContent =
+        "PhonePe laptop pe nahi khulti. Phone ke Chrome se yeh page kholo, ya Scan QR use karo.";
+    } else if (inApp) {
+      hint.hidden = false;
+      hint.textContent =
+        "WhatsApp / Instagram andar se app intent block hota hai. Neeche “Open in Chrome” dabao, phir PhonePe.";
     }
-    next();
   }
 
-  function bindLaunch(el, urls, fallbackHref) {
-    el.href = fallbackHref || urls[0];
-    el.addEventListener("click", function (e) {
-      if (!isMobile) return; // let href try; laptop has no PhonePe
-      e.preventDefault();
-      launchChain(urls);
-    });
+  const chromeOpen = document.getElementById("chromeOpen");
+  if (chromeOpen && inApp && isAndroid) {
+    chromeOpen.hidden = false;
+    chromeOpen.style.display = "flex";
+    const here = location.href.replace(/^https?:\/\//, "");
+    chromeOpen.href =
+      "intent://" + here + "#Intent;scheme=https;package=com.android.chrome;end";
   }
 
-  const btnPhonepe = document.getElementById("btnPhonepe");
-  const btnPaytm = document.getElementById("btnPaytm");
+  document.getElementById("btnPhonepe").href = phonepeHref;
+  document.getElementById("btnPaytm").href = paytmHref;
   const btnPrimary = document.getElementById("btnPrimary");
-  const btnOpenUpi = document.getElementById("btnOpenUpi");
-
-  bindLaunch(btnPhonepe, phonepeChain, isAndroid ? phonepeIntent : phonepePay);
-  bindLaunch(btnPaytm, paytmChain, isAndroid ? paytmIntent : paytmDeep);
-  bindLaunch(btnPrimary, phonepeChain, isAndroid ? phonepeIntent : upiPay);
+  btnPrimary.href = phonepeHref;
   btnPrimary.textContent = "Pay " + amountLabel + " with PhonePe";
-  btnOpenUpi.href = upiPay;
-  bindLaunch(btnOpenUpi, [upiPay], upiPay);
+  document.getElementById("btnOpenUpi").href = upiPay;
+
+  // Android: if native scheme is ignored, same tap cannot retry via timer (Chrome blocks it).
+  // Extra PhonePe control uses intent:// as a second tap.
+  const btnPhonepeIntent = document.getElementById("btnPhonepeIntent");
+  if (btnPhonepeIntent) {
+        if (isAndroid) {
+      btnPhonepeIntent.hidden = false;
+      btnPhonepeIntent.style.display = "flex";
+      btnPhonepeIntent.href = phonepeAndroidIntent;
+    } else {
+      btnPhonepeIntent.hidden = true;
+    }
+  }
 
   const qrEl = document.getElementById("qr");
   qrEl.innerHTML = "";

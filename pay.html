@@ -24,12 +24,14 @@
       </div>
       <div class="body" id="panelUpi">
         <p class="section-title">Choose app</p>
-        <p class="hint" id="appHint" hidden>PhonePe / Paytm phone ke Chrome ya Safari se kholo — laptop pe app intent nahi khulta. QR scan kar sakte ho.</p>
+        <p class="hint" id="appHint" hidden></p>
+        <a id="chromeOpen" class="btn-ghost block" hidden href="#" style="margin-bottom:12px;display:none">Open this page in Chrome</a>
         <div class="apps">
           <a id="btnPhonepe" class="app" href="#"><span class="app-icon phonepe">Pe</span> PhonePe</a>
           <a id="btnPaytm" class="app" href="#"><span class="app-icon paytm">Pay</span> Paytm</a>
         </div>
         <a id="btnPrimary" class="btn-primary block" href="#">Pay with PhonePe</a>
+        <a id="btnPhonepeIntent" class="btn-ghost block" hidden href="#" style="margin-top:8px">PhonePe (Chrome intent)</a>
         <div class="or">OR copy UPI ID</div>
         <div class="vpa-row">
           <code id="vpaText"></code>
@@ -57,7 +59,7 @@
       </div>
     </div>
   </main>
-  <script src="config.js?v=3"></script>
-  <script src="pay.js?v=3"></script>
+  <script src="config.js?v=4"></script>
+  <script src="pay.js?v=4"></script>
 </body>
 </html>
