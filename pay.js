@@ -1,6 +1,6 @@
 (function () {
   const cfg = window.EMI_PAY || {};
-  const vpa = cfg.vpa || "paytm.s45mq3q@pty";
+  const vpa = cfg.vpa || "paytm.s4710fj@pty";
   const pn = cfg.merchantName || "EMI Pay";
 
   const params = new URLSearchParams(window.location.search);
