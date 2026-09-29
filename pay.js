@@ -35,7 +35,8 @@
     refLine.textContent = bits.join(" · ");
   }
 
-  let tn = ref ? "EMI Pay — " + ref : "EMI Pay";
+  // ASCII hyphen only — em dash breaks some UPI apps
+  let tn = ref ? "EMI Pay - " + ref : "EMI Pay";
   if (tn.length > 50) tn = tn.slice(0, 50);
 
   const q =
@@ -43,22 +44,73 @@
     "&pn=" + encodeURIComponent(pn) +
     "&am=" + encodeURIComponent(am) +
     "&cu=INR&tn=" + encodeURIComponent(tn);
-  const upiPay = "upi://pay?" + q;
-  const isAndroid = /android/i.test(navigator.userAgent || "");
-  const phonepe = isAndroid ? "phonepe://upi/pay?" + q : "phonepe://upi//pay?" + q;
-  const paytm =
-    "paytmmp://cash_wallet?pa=" + encodeURIComponent(vpa) +
-    "&pn=" + encodeURIComponent(pn) +
-    "&am=" + encodeURIComponent(am) +
-    "&cu=INR&tn=" + encodeURIComponent(tn) +
-    "&featuretype=money_transfer";
 
-  document.getElementById("btnPhonepe").href = phonepe;
-  document.getElementById("btnPaytm").href = paytm;
+  const upiPay = "upi://pay?" + q;
+  const ua = navigator.userAgent || "";
+  const isAndroid = /android/i.test(ua);
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+  const isMobile = isAndroid || isIOS || /mobile/i.test(ua);
+
+  // PhonePe: Chrome Android needs intent:// + package. Custom phonepe:// often does nothing.
+  const phonepePay = "phonepe://pay?" + q;
+  const phonepeUpi = "phonepe://upi/pay?" + q;
+  const phonepeIntent =
+    "intent://pay?" + q + "#Intent;scheme=phonepe;package=com.phonepe.app;end";
+  const phonepeUpiIntent =
+    "intent://pay?" + q + "#Intent;scheme=upi;package=com.phonepe.app;end";
+
+  const paytmDeep =
+    "paytmmp://cash_wallet?" + q + "&featuretype=money_transfer";
+  const paytmIntent =
+    "intent://cash_wallet?" + q +
+    "&featuretype=money_transfer#Intent;scheme=paytmmp;package=net.one97.paytm;end";
+
+  const phonepeChain = isAndroid
+    ? [phonepeIntent, phonepeUpiIntent, phonepePay, phonepeUpi, upiPay]
+    : [phonepePay, phonepeUpi, upiPay];
+
+  const paytmChain = isAndroid
+    ? [paytmIntent, paytmDeep, upiPay]
+    : [paytmDeep, upiPay];
+
+  const hint = document.getElementById("appHint");
+  if (hint && !isMobile) {
+    hint.hidden = false;
+  }
+
+  function launchChain(urls) {
+    var i = 0;
+    var started = Date.now();
+    function next() {
+      if (document.hidden) return;
+      if (i >= urls.length) return;
+      if (Date.now() - started > 5000) return;
+      window.location.href = urls[i++];
+      setTimeout(next, 1100);
+    }
+    next();
+  }
+
+  function bindLaunch(el, urls, fallbackHref) {
+    el.href = fallbackHref || urls[0];
+    el.addEventListener("click", function (e) {
+      if (!isMobile) return; // let href try; laptop has no PhonePe
+      e.preventDefault();
+      launchChain(urls);
+    });
+  }
+
+  const btnPhonepe = document.getElementById("btnPhonepe");
+  const btnPaytm = document.getElementById("btnPaytm");
   const btnPrimary = document.getElementById("btnPrimary");
-  btnPrimary.href = phonepe;
+  const btnOpenUpi = document.getElementById("btnOpenUpi");
+
+  bindLaunch(btnPhonepe, phonepeChain, isAndroid ? phonepeIntent : phonepePay);
+  bindLaunch(btnPaytm, paytmChain, isAndroid ? paytmIntent : paytmDeep);
+  bindLaunch(btnPrimary, phonepeChain, isAndroid ? phonepeIntent : upiPay);
   btnPrimary.textContent = "Pay " + amountLabel + " with PhonePe";
-  document.getElementById("btnOpenUpi").href = upiPay;
+  btnOpenUpi.href = upiPay;
+  bindLaunch(btnOpenUpi, [upiPay], upiPay);
 
   const qrEl = document.getElementById("qr");
   qrEl.innerHTML = "";
