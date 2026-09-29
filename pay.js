@@ -17,7 +17,6 @@
   }
 
   const am = amount.toFixed(2);
-  const paise = Math.round(amount * 100);
   const amountLabel =
     "₹" + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -38,12 +37,17 @@
 
   let tn = ref ? "EMI Pay - " + ref : "EMI Pay";
   if (tn.length > 50) tn = tn.slice(0, 50);
+  const tr = String(ref || "EMIPAY").replace(/[^A-Za-z0-9]/g, "").slice(0, 32) || "EMIPAY";
 
+  // NPCI UPI collect (merchant VPA). Do NOT use phonepe://native P2P — PhonePe
+  // opens but rejects merchant / @pty collect as a P2P contact payment.
   const q =
     "pa=" + encodeURIComponent(vpa) +
     "&pn=" + encodeURIComponent(pn) +
     "&am=" + encodeURIComponent(am) +
-    "&cu=INR&tn=" + encodeURIComponent(tn);
+    "&cu=INR" +
+    "&tn=" + encodeURIComponent(tn) +
+    "&tr=" + encodeURIComponent(tr);
 
   const upiPay = "upi://pay?" + q;
   const ua = navigator.userAgent || "";
@@ -52,37 +56,7 @@
   const isMobile = isAndroid || isIOS || /mobile/i.test(ua);
   const inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|; wv|WebView/i.test(ua);
 
-  function b64utf8(str) {
-    return btoa(unescape(encodeURIComponent(str)));
-  }
-
-  // Same PhonePe Android handler that already works on the main gateway pay page
-  const phonepeNativePayload = {
-    contact: { cbsName: pn, nickName: pn, vpa: vpa, type: "VPA" },
-    p2pPaymentCheckoutParams: {
-      note: tn,
-      isByDefaultKnownContact: true,
-      enableSpeechToText: false,
-      allowAmountEdit: false,
-      showQrCodeOption: false,
-      disableViewHistory: true,
-      shouldShowUnsavedContactBanner: false,
-      isRecurring: false,
-      checkoutType: "DEFAULT",
-      transactionContext: "p2p",
-      initialAmount: paise,
-      disableNotesEdit: true,
-      showKeyboard: true,
-      currency: "INR",
-      shouldShowMaskedNumber: true,
-    },
-  };
-  const phonepeNative =
-    "phonepe://native?data=" +
-    encodeURIComponent(b64utf8(JSON.stringify(phonepeNativePayload))) +
-    "&id=p2ppayment";
-
-  const phonepeIos = "phonepe://upi/pay?" + q;
+  const phonepeUpi = isIOS ? "phonepe://upi//pay?" + q : "phonepe://upi/pay?" + q;
   const phonepeAndroidIntent =
     "intent://pay?" + q + "#Intent;scheme=upi;package=com.phonepe.app;end";
 
@@ -91,7 +65,7 @@
     "intent://cash_wallet?" + q +
     "&featuretype=money_transfer#Intent;scheme=paytmmp;package=net.one97.paytm;end";
 
-  const phonepeHref = isAndroid ? phonepeNative : phonepeIos;
+  const phonepeHref = isAndroid ? phonepeAndroidIntent : phonepeUpi;
   const paytmHref = isAndroid ? paytmIntent : paytmDeep;
 
   const hint = document.getElementById("appHint");
@@ -99,11 +73,11 @@
     if (!isMobile) {
       hint.hidden = false;
       hint.textContent =
-        "PhonePe laptop pe nahi khulti. Phone ke Chrome se yeh page kholo, ya Scan QR use karo.";
+        "PhonePe laptop pe nahi khulti. Phone ke Chrome se kholo, ya Scan QR.";
     } else if (inApp) {
       hint.hidden = false;
       hint.textContent =
-        "WhatsApp / Instagram andar se app intent block hota hai. Neeche “Open in Chrome” dabao, phir PhonePe.";
+        "WhatsApp / Instagram se app nahi khulti. “Open in Chrome” dabao, phir PhonePe.";
     }
   }
 
@@ -123,17 +97,12 @@
   btnPrimary.textContent = "Pay " + amountLabel + " with PhonePe";
   document.getElementById("btnOpenUpi").href = upiPay;
 
-  // Android: if native scheme is ignored, same tap cannot retry via timer (Chrome blocks it).
-  // Extra PhonePe control uses intent:// as a second tap.
   const btnPhonepeIntent = document.getElementById("btnPhonepeIntent");
   if (btnPhonepeIntent) {
-        if (isAndroid) {
-      btnPhonepeIntent.hidden = false;
-      btnPhonepeIntent.style.display = "flex";
-      btnPhonepeIntent.href = phonepeAndroidIntent;
-    } else {
-      btnPhonepeIntent.hidden = true;
-    }
+    btnPhonepeIntent.hidden = false;
+    btnPhonepeIntent.style.display = "flex";
+    btnPhonepeIntent.href = phonepeUpi;
+    btnPhonepeIntent.textContent = "PhonePe (upi/pay)";
   }
 
   const qrEl = document.getElementById("qr");
