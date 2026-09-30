@@ -35,49 +35,51 @@
     refLine.textContent = bits.join(" · ");
   }
 
-  let tn = ref ? "EMI Pay - " + ref : "EMI Pay";
-  if (tn.length > 50) tn = tn.slice(0, 50);
-  const tr = String(ref || "EMIPAY").replace(/[^A-Za-z0-9]/g, "").slice(0, 32) || "EMIPAY";
+  let tn = ref ? ("EMI Pay " + ref) : "EMI Pay";
+  tn = tn.replace(/[^\x20-\x7E]/g, " ").slice(0, 50);
+  const tr = ("E" + Date.now().toString(36) + (ref || "")).replace(/[^A-Za-z0-9]/g, "").slice(0, 35) || "EMIPAY1";
 
-  // NPCI UPI collect (merchant VPA). Do NOT use phonepe://native P2P — PhonePe
-  // opens but rejects merchant / @pty collect as a P2P contact payment.
-  const q =
-    "pa=" + encodeURIComponent(vpa) +
-    "&pn=" + encodeURIComponent(pn) +
-    "&am=" + encodeURIComponent(am) +
-    "&cu=INR" +
-    "&tn=" + encodeURIComponent(tn) +
-    "&tr=" + encodeURIComponent(tr);
+  // NPCI UPI Linking: upi://pay?  (same query for QR + every app)
+  const q = new URLSearchParams({
+    pa: vpa,
+    pn: pn,
+    am: am,
+    cu: "INR",
+    tn: tn,
+    tr: tr,
+    mc: "0000",
+  }).toString();
 
   const upiPay = "upi://pay?" + q;
+
+  // App-specific UPI pay (not P2P native, not Paytm cash_wallet)
+  const phonepePay = "phonepe://pay?" + q;
+  const phonepeUpiPay = "phonepe://upi/pay?" + q;
+  const paytmUpiPay = "paytmmp://upi/pay?" + q;
+  const paytmPay = "paytmmp://pay?" + q;
+
+  const phonepeIntent =
+    "intent://pay?" + q + "#Intent;scheme=upi;package=com.phonepe.app;end";
+  const paytmIntent =
+    "intent://pay?" + q + "#Intent;scheme=upi;package=net.one97.paytm;end";
+
   const ua = navigator.userAgent || "";
   const isAndroid = /android/i.test(ua);
   const isIOS = /iphone|ipad|ipod/i.test(ua);
   const isMobile = isAndroid || isIOS || /mobile/i.test(ua);
   const inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|; wv|WebView/i.test(ua);
 
-  const phonepeUpi = isIOS ? "phonepe://upi//pay?" + q : "phonepe://upi/pay?" + q;
-  const phonepeAndroidIntent =
-    "intent://pay?" + q + "#Intent;scheme=upi;package=com.phonepe.app;end";
-
-  const paytmDeep = "paytmmp://cash_wallet?" + q + "&featuretype=money_transfer";
-  const paytmIntent =
-    "intent://cash_wallet?" + q +
-    "&featuretype=money_transfer#Intent;scheme=paytmmp;package=net.one97.paytm;end";
-
-  const phonepeHref = isAndroid ? phonepeAndroidIntent : phonepeUpi;
-  const paytmHref = isAndroid ? paytmIntent : paytmDeep;
+  const phonepeHref = isAndroid ? phonepePay : phonepeUpiPay;
+  const paytmHref = isAndroid ? paytmUpiPay : paytmUpiPay;
 
   const hint = document.getElementById("appHint");
   if (hint) {
     if (!isMobile) {
       hint.hidden = false;
-      hint.textContent =
-        "PhonePe laptop pe nahi khulti. Phone ke Chrome se kholo, ya Scan QR.";
+      hint.textContent = "App intent phone pe Chrome se kholo. Laptop pe Scan QR use karo.";
     } else if (inApp) {
       hint.hidden = false;
-      hint.textContent =
-        "WhatsApp / Instagram se app nahi khulti. “Open in Chrome” dabao, phir PhonePe.";
+      hint.textContent = "WhatsApp ke andar se mat kholo. Open in Chrome, phir Pay.";
     }
   }
 
@@ -97,12 +99,12 @@
   btnPrimary.textContent = "Pay " + amountLabel + " with PhonePe";
   document.getElementById("btnOpenUpi").href = upiPay;
 
-  const btnPhonepeIntent = document.getElementById("btnPhonepeIntent");
-  if (btnPhonepeIntent) {
-    btnPhonepeIntent.hidden = false;
-    btnPhonepeIntent.style.display = "flex";
-    btnPhonepeIntent.href = phonepeUpi;
-    btnPhonepeIntent.textContent = "PhonePe (upi/pay)";
+  const extra = document.getElementById("btnPhonepeIntent");
+  if (extra) {
+    extra.hidden = !isAndroid;
+    extra.style.display = isAndroid ? "flex" : "none";
+    extra.href = phonepeIntent;
+    extra.textContent = "PhonePe (Android intent)";
   }
 
   const qrEl = document.getElementById("qr");
