@@ -21,7 +21,20 @@
   const amountLabel =
     "₹" + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const displayRef = ref || ("EP" + Date.now().toString(36).toUpperCase());
+  function twelveDigitRef() {
+    if (/^\d{12}$/.test(ref)) return ref;
+    const key = "ep12:" + String(amount) + ":" + (ref || "") + ":" + customer;
+    try {
+      const saved = sessionStorage.getItem(key);
+      if (saved && /^\d{12}$/.test(saved)) return saved;
+    } catch (e) {}
+    const n = String(Math.floor(1e11 + Math.random() * 9e11));
+    try {
+      sessionStorage.setItem(key, n);
+    } catch (e) {}
+    return n;
+  }
+  const displayRef = twelveDigitRef();
 
   document.getElementById("payeeName").textContent = pn;
   document.getElementById("amountDisplay").textContent = amountLabel;
@@ -62,7 +75,7 @@
       type: "VPA",
     },
     p2pPaymentCheckoutParams: {
-      note: "TXN-" + Date.now(),
+      note: displayRef,
       isByDefaultKnownContact: false,
       initialAmount: phonePeAmount,
       currency: "INR",
@@ -72,7 +85,7 @@
   };
 
   const amStr = rawAmount.toFixed(2);
-  const tnUpi = ("Ref " + displayRef).replace(/[^\x20-\x7E]/g, " ").slice(0, 50);
+  const tnUpi = displayRef;
   const upiQ = new URLSearchParams({
     pa: vpa,
     pn: pn,
