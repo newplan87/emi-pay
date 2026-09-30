@@ -63,6 +63,21 @@
     },
   };
 
+  const amStr = rawAmount.toFixed(2);
+  const tnUpi = (ref ? "Order " + ref : pn).replace(/[^\x20-\x7E]/g, " ").slice(0, 50);
+  const upiQ = new URLSearchParams({
+    pa: vpa,
+    pn: pn,
+    am: amStr,
+    cu: "INR",
+    tn: tnUpi,
+  }).toString();
+  const upiPay = "upi://pay?" + upiQ;
+  const paytmUpi = "paytmmp://upi/pay?" + upiQ;
+  const paytmPay = "paytmmp://pay?" + upiQ;
+  const paytmIntent =
+    "intent://pay?" + upiQ + "#Intent;scheme=upi;package=net.one97.paytm;end";
+
   function phonepeLinks(payload) {
     const base64Data = b64(payload);
     const nativeDeeplink =
@@ -73,7 +88,7 @@
       "&pn=" +
       encodeURIComponent(bankName) +
       "&am=" +
-      rawAmount +
+      amStr +
       "&cu=INR";
     const intentDeeplink =
       "intent://native?data=" +
@@ -86,34 +101,34 @@
 
   const p2pLinks = phonepeLinks(payloadP2p);
 
-  // Exact Paytm string from that page (only VPA/amount swapped)
-  const note = bankName.replace(/ /g, "_");
-  const paytmDeep =
-    "paytmmp://cash_wallet?pa=" +
-    encodeURIComponent(upiID2) +
-    "&am=" +
-    rawAmount +
-    "&tn=" +
-    encodeURIComponent(note) +
-    "&pn=" +
-    encodeURIComponent(upiID2) +
-    "&mc=&cu=INR&url=&mode=&purpose=&orgid=&sign=&featuretype=money_transfer";
-
-  function openPhonePeWith(links) {
+  function openChain(urls) {
     const a = document.createElement("a");
-    a.href = links.nativeDeeplink;
+    a.href = urls[0];
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
-    setTimeout(function () {
-      window.location.href = links.nativeDeeplink;
-    }, 100);
-    setTimeout(function () {
-      window.location.href = links.intentDeeplink;
-    }, 300);
+    urls.forEach(function (url, i) {
+      if (i === 0) return;
+      setTimeout(function () {
+        window.location.href = url;
+      }, 80 * i);
+    });
     setTimeout(function () {
       if (a.parentNode) a.parentNode.removeChild(a);
-    }, 500);
+    }, 600);
+  }
+
+  function openPhonePeWith(links) {
+    openChain([links.nativeDeeplink, links.nativeDeeplink, links.intentDeeplink]);
+  }
+
+  function openPaytm() {
+    const uaNow = navigator.userAgent || "";
+    const android = /android/i.test(uaNow);
+    const urls = android
+      ? [paytmIntent, paytmUpi, paytmPay, upiPay]
+      : [paytmUpi, paytmPay, upiPay];
+    openChain(urls);
   }
 
   const ua = navigator.userAgent || "";
@@ -147,8 +162,14 @@
   const btnOpenUpi = document.getElementById("btnOpenUpi");
 
   btnPhonepe.href = p2pLinks.nativeDeeplink;
-  btnPaytm.href = paytmDeep;
-  if (btnOpenUpi) btnOpenUpi.href = p2pLinks.upiFallback;
+  btnPaytm.href = paytmUpi;
+  if (btnOpenUpi) btnOpenUpi.href = upiPay;
+  if (btnPaytm) {
+    btnPaytm.addEventListener("click", function (e) {
+      e.preventDefault();
+      openPaytm();
+    });
+  }
 
   function bindPe(el, links) {
     if (!el) return;
@@ -165,7 +186,7 @@
     qrEl.innerHTML = "";
     if (typeof QRCode === "function") {
       new QRCode(qrEl, {
-        text: p2pLinks.upiFallback,
+        text: upiPay,
         width: 220,
         height: 220,
         colorDark: "#002E6E",
@@ -180,7 +201,7 @@
       img.alt = "UPI QR";
       img.src =
         "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
-        encodeURIComponent(p2pLinks.upiFallback);
+        encodeURIComponent(upiPay);
       qrEl.appendChild(img);
     }
   }
