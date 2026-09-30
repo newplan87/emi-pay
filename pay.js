@@ -123,12 +123,16 @@
   }
 
   function openPaytm() {
-    const uaNow = navigator.userAgent || "";
-    const android = /android/i.test(uaNow);
-    const urls = android
-      ? [paytmIntent, paytmUpi, paytmPay, upiPay]
-      : [paytmUpi, paytmPay, upiPay];
-    openChain(urls);
+    const android = /android/i.test(navigator.userAgent || "");
+    const url = android ? paytmIntent : paytmUpi;
+    const a = document.createElement("a");
+    a.href = url;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 400);
   }
 
   const ua = navigator.userAgent || "";
