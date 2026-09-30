@@ -16,7 +16,6 @@
     return;
   }
 
-  const am = amount.toFixed(2);
   const rawAmount = amount;
   const phonePeAmount = Math.round(rawAmount * 100);
   const amountLabel =
@@ -37,50 +36,100 @@
     refLine.textContent = bits.join(" · ");
   }
 
-  const noteMsg = (ref ? String(ref) : "EMI Pay").slice(0, 40);
-  const upiFallback =
-    "upi://pay?pa=" +
-    encodeURIComponent(vpa) +
-    "&pn=" +
-    encodeURIComponent(pn) +
-    "&am=" +
-    rawAmount +
-    "&cu=INR";
+  const upiID = vpa;
+  const upiID2 = vpa;
+  const bankName = pn;
 
-  const payload = {
+  function b64(jsonObj) {
+    const jsonString = JSON.stringify(jsonObj);
+    return btoa(unescape(encodeURIComponent(jsonString)));
+  }
+
+  // Same two PhonePe payloads as the reference page (payloadId 1 and 2)
+  const payloadP2p = {
+    contact: {
+      cbcName: "",
+      nickName: "",
+      vpa: upiID,
+      type: "VPA",
+    },
+    p2pPaymentCheckoutParams: {
+      note: "TXN-" + Date.now(),
+      isByDefaultKnownContact: false,
+      initialAmount: phonePeAmount,
+      currency: "INR",
+      checkoutType: "DEFAULT",
+      transactionContext: "p2p",
+    },
+  };
+
+  const payloadCollect = {
     p2pPaymentCheckoutParams: {
       checkoutType: "COLLECT",
       initialAmount: phonePeAmount,
-      note: { type: "text", message: noteMsg },
+      note: { type: "text", message: ref ? String(ref).slice(0, 40) : "PEgUFxY 57588" },
       supportedInstruments: -1,
     },
     contact: {
       type: "EXTERNAL_MERCHANT",
-      name: pn,
-      vpa: vpa,
+      name: bankName,
+      vpa: upiID,
     },
   };
-  const jsonString = JSON.stringify(payload);
-  const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
-  const nativeDeeplink =
-    "phonepe://native?data=" + encodeURIComponent(base64Data) + "&id=p2ppayment";
-  const intentDeeplink =
-    "intent://native?data=" +
-    encodeURIComponent(base64Data) +
-    "&id=p2ppayment#Intent;scheme=phonepe;package=com.phonepe.app;S.browser_fallback_url=" +
-    encodeURIComponent(upiFallback) +
-    ";end";
 
+  function phonepeLinks(payload) {
+    const base64Data = b64(payload);
+    const nativeDeeplink =
+      "phonepe://native?data=" + encodeURIComponent(base64Data) + "&id=p2ppayment";
+    const upiFallback =
+      "upi://pay?pa=" +
+      encodeURIComponent(upiID) +
+      "&pn=" +
+      encodeURIComponent(bankName) +
+      "&am=" +
+      rawAmount +
+      "&cu=INR";
+    const intentDeeplink =
+      "intent://native?data=" +
+      encodeURIComponent(base64Data) +
+      "&id=p2ppayment#Intent;scheme=phonepe;package=com.phonepe.app;S.browser_fallback_url=" +
+      encodeURIComponent(upiFallback) +
+      ";end";
+    return { nativeDeeplink, intentDeeplink, upiFallback };
+  }
+
+  const p2pLinks = phonepeLinks(payloadP2p);
+  const collectLinks = phonepeLinks(payloadCollect);
+
+  // Exact Paytm string from that page (only VPA/amount swapped)
+  const note = bankName.replace(/ /g, "_");
   const paytmDeep =
     "paytmmp://cash_wallet?pa=" +
-    encodeURIComponent(vpa) +
+    encodeURIComponent(upiID2) +
     "&am=" +
     rawAmount +
     "&tn=" +
-    encodeURIComponent(pn.replace(/ /g, "_")) +
+    encodeURIComponent(note) +
     "&pn=" +
-    encodeURIComponent(vpa) +
+    encodeURIComponent(upiID2) +
     "&mc=&cu=INR&url=&mode=&purpose=&orgid=&sign=&featuretype=money_transfer";
+
+  function openPhonePeWith(links) {
+    const a = document.createElement("a");
+    a.href = links.nativeDeeplink;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      window.location.href = links.nativeDeeplink;
+    }, 100);
+    setTimeout(function () {
+      window.location.href = links.intentDeeplink;
+    }, 300);
+    setTimeout(function () {
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 500);
+  }
 
   const ua = navigator.userAgent || "";
   const isAndroid = /android/i.test(ua);
@@ -88,32 +137,14 @@
   const isMobile = isAndroid || isIOS || /mobile/i.test(ua);
   const inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|; wv|WebView/i.test(ua);
 
-  function openPhonePe(e) {
-    if (e) e.preventDefault();
-    const a = document.createElement("a");
-    a.href = nativeDeeplink;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () {
-      window.location.href = nativeDeeplink;
-    }, 100);
-    setTimeout(function () {
-      window.location.href = intentDeeplink;
-    }, 300);
-    setTimeout(function () {
-      if (a.parentNode) a.parentNode.removeChild(a);
-    }, 500);
-  }
-
   const hint = document.getElementById("appHint");
   if (hint) {
     if (!isMobile) {
       hint.hidden = false;
-      hint.textContent = "PhonePe phone ke Chrome se kholo. Laptop pe Scan QR.";
+      hint.textContent = "Phone Chrome se kholo. Laptop pe Scan QR.";
     } else if (inApp) {
       hint.hidden = false;
-      hint.textContent = "WhatsApp ke andar se nahi. Open in Chrome, phir PhonePe.";
+      hint.textContent = "WhatsApp ke andar se nahi — Open in Chrome.";
     }
   }
 
@@ -132,25 +163,36 @@
   const btnOpenUpi = document.getElementById("btnOpenUpi");
   const extra = document.getElementById("btnPhonepeIntent");
 
-  btnPhonepe.href = nativeDeeplink;
-  btnPrimary.href = nativeDeeplink;
+  // Default PhonePe = P2P send-to-VPA (payload 1). COLLECT (payload 2) is what
+  // shows "merchant not accepting" on Paytm @pty IDs.
+  btnPhonepe.href = p2pLinks.nativeDeeplink;
+  btnPrimary.href = p2pLinks.nativeDeeplink;
   btnPrimary.textContent = "Pay " + amountLabel + " with PhonePe";
   btnPaytm.href = paytmDeep;
-  btnOpenUpi.href = upiFallback;
+  btnOpenUpi.href = p2pLinks.upiFallback;
 
-  btnPhonepe.addEventListener("click", openPhonePe);
-  btnPrimary.addEventListener("click", openPhonePe);
+  function bindPe(el, links) {
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      openPhonePeWith(links);
+    });
+  }
+  bindPe(btnPhonepe, p2pLinks);
+  bindPe(btnPrimary, p2pLinks);
 
   if (extra) {
-    extra.hidden = true;
-    extra.style.display = "none";
+    extra.hidden = false;
+    extra.style.display = "flex";
+    extra.href = collectLinks.nativeDeeplink;
+    extra.textContent = "PhonePe COLLECT (site wala)";
+    bindPe(extra, collectLinks);
   }
 
   const qrEl = document.getElementById("qr");
   qrEl.innerHTML = "";
   if (typeof QRCode === "function") {
     new QRCode(qrEl, {
-      text: upiFallback,
+      text: p2pLinks.upiFallback,
       width: 220,
       height: 220,
       colorDark: "#002E6E",
