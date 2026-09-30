@@ -145,4 +145,5 @@ small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
   font-weight: 600;
   color: var(--muted);
 }
+.vpa-row + .field-label { margin-top: 14px; }
 .is-off { display: none !important; }
