@@ -166,12 +166,29 @@
   const btnOpenUpi = document.getElementById("btnOpenUpi");
 
   btnPhonepe.href = p2pLinks.nativeDeeplink;
-  btnPaytm.href = paytmUpi;
+  btnPaytm.href = "#qr";
   if (btnOpenUpi) btnOpenUpi.href = upiPay;
+
+  const panelUpi = document.getElementById("panelUpi");
+  const panelQr = document.getElementById("panelQr");
+  const qrNote = document.getElementById("qrNote");
+
+  function showQr(note) {
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.classList.toggle("active", t.getAttribute("data-tab") === "qr");
+    });
+    panelUpi.classList.add("is-off");
+    panelQr.classList.remove("is-off");
+    if (qrNote) qrNote.textContent = note || "Scan with any UPI app";
+    requestAnimationFrame(function () {
+      requestAnimationFrame(drawQr);
+    });
+  }
+
   if (btnPaytm) {
     btnPaytm.addEventListener("click", function (e) {
       e.preventDefault();
-      openPaytm();
+      showQr("Scan this QR in Paytm");
     });
   }
 
@@ -232,19 +249,15 @@
   if (copyA) copyA.addEventListener("click", function () { copyUpi(copyA); });
   if (copyB) copyB.addEventListener("click", function () { copyUpi(copyB); });
 
-  const panelUpi = document.getElementById("panelUpi");
-  const panelQr = document.getElementById("panelQr");
   document.querySelectorAll(".tab").forEach(function (tab) {
     tab.addEventListener("click", function () {
-      document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
-      tab.classList.add("active");
       const which = tab.getAttribute("data-tab");
-      panelUpi.classList.toggle("is-off", which !== "upi");
-      panelQr.classList.toggle("is-off", which !== "qr");
-      if (which === "qr") {
-        requestAnimationFrame(function () {
-          requestAnimationFrame(drawQr);
-        });
+      if (which === "qr") showQr("Scan with any UPI app");
+      else {
+        document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
+        tab.classList.add("active");
+        panelUpi.classList.remove("is-off");
+        panelQr.classList.add("is-off");
       }
     });
   });
