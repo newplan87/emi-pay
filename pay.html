@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>UPI Payment</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=14" />
+  <link rel="stylesheet" href="style.css?v=15" />
   <script src="qrcode.min.js"></script>
 </head>
 <body>
@@ -40,6 +40,11 @@
           <code id="vpaText"></code>
           <button type="button" id="copyVpa" class="btn-mini">Copy</button>
         </div>
+        <p class="field-label">Reference number</p>
+        <div class="vpa-row">
+          <code id="refText"></code>
+          <button type="button" id="copyRef" class="btn-mini">Copy</button>
+        </div>
       </div>
       <div class="body is-off" id="panelQr">
         <p class="field-label" id="qrNote">Scan with any UPI app</p>
@@ -48,6 +53,11 @@
         <div class="vpa-row">
           <code id="vpaTextQr"></code>
           <button type="button" id="copyVpaQr" class="btn-mini">Copy</button>
+        </div>
+        <p class="field-label">Reference number</p>
+        <div class="vpa-row">
+          <code id="refTextQr"></code>
+          <button type="button" id="copyRefQr" class="btn-mini">Copy</button>
         </div>
         <a id="btnOpenUpi" class="btn-primary block" href="#">Pay with UPI</a>
       </div>
@@ -58,7 +68,7 @@
       </div>
     </div>
   </main>
-  <script src="config.js?v=14"></script>
-  <script src="pay.js?v=14"></script>
+  <script src="config.js?v=15"></script>
+  <script src="pay.js?v=15"></script>
 </body>
 </html>

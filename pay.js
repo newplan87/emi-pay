@@ -21,11 +21,19 @@
   const amountLabel =
     "₹" + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  const displayRef = ref || ("EP" + Date.now().toString(36).toUpperCase());
+
   document.getElementById("payeeName").textContent = pn;
   document.getElementById("amountDisplay").textContent = amountLabel;
   document.getElementById("vpaText").textContent = vpa;
   const vpaQr = document.getElementById("vpaTextQr");
   if (vpaQr) vpaQr.textContent = vpa;
+  function setRefEls(id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = displayRef;
+  }
+  setRefEls("refText");
+  setRefEls("refTextQr");
 
   const refLine = document.getElementById("refLine");
   const bits = [];
@@ -64,7 +72,7 @@
   };
 
   const amStr = rawAmount.toFixed(2);
-  const tnUpi = (ref ? "Order " + ref : pn).replace(/[^\x20-\x7E]/g, " ").slice(0, 50);
+  const tnUpi = ("Ref " + displayRef).replace(/[^\x20-\x7E]/g, " ").slice(0, 50);
   const upiQ = new URLSearchParams({
     pa: vpa,
     pn: pn,
@@ -227,8 +235,7 @@
     }
   }
 
-  function copyUpi(btn) {
-    const text = vpa;
+  function copyText(text, btn) {
     const done = function () {
       if (!btn) return;
       const prev = btn.textContent;
@@ -237,17 +244,21 @@
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(done).catch(function () {
-        window.prompt("UPI ID", text);
+        window.prompt("Copy", text);
       });
       return;
     }
-    window.prompt("UPI ID", text);
+    window.prompt("Copy", text);
   }
 
   const copyA = document.getElementById("copyVpa");
   const copyB = document.getElementById("copyVpaQr");
-  if (copyA) copyA.addEventListener("click", function () { copyUpi(copyA); });
-  if (copyB) copyB.addEventListener("click", function () { copyUpi(copyB); });
+  const copyR = document.getElementById("copyRef");
+  const copyRq = document.getElementById("copyRefQr");
+  if (copyA) copyA.addEventListener("click", function () { copyText(vpa, copyA); });
+  if (copyB) copyB.addEventListener("click", function () { copyText(vpa, copyB); });
+  if (copyR) copyR.addEventListener("click", function () { copyText(displayRef, copyR); });
+  if (copyRq) copyRq.addEventListener("click", function () { copyText(displayRef, copyRq); });
 
   document.querySelectorAll(".tab").forEach(function (tab) {
     tab.addEventListener("click", function () {
