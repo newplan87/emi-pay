@@ -22,10 +22,8 @@
     "₹" + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   document.getElementById("payeeName").textContent = pn;
-  document.getElementById("metaName").textContent = pn;
   document.getElementById("amountDisplay").textContent = amountLabel;
   document.getElementById("vpaText").textContent = vpa;
-  document.getElementById("metaVpa").textContent = vpa;
 
   const refLine = document.getElementById("refLine");
   const bits = [];
@@ -160,8 +158,8 @@
   bindPe(btnPhonepe, p2pLinks);
 
   const qrEl = document.getElementById("qr");
-  qrEl.innerHTML = "";
-  if (typeof QRCode === "function") {
+  if (qrEl && typeof QRCode === "function") {
+    qrEl.innerHTML = "";
     new QRCode(qrEl, {
       text: p2pLinks.upiFallback,
       width: 220,
