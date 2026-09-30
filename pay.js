@@ -57,16 +57,19 @@
   }
 
   const amStr = rawAmount.toFixed(2);
-  const pnSafe = (pn.replace(/[^a-zA-Z0-9 ]/g, " ").trim() || "EMI Pay");
-  // BallyPay: same query for every app; pa is not encoded
+  const pnSafe = encodeURIComponent(
+    (pn.replace(/[^a-zA-Z0-9 ]/g, "").trim().slice(0, 25) || "EMI Pay")
+  );
+  const trSafe = String(displayRef).replace(/[^a-zA-Z0-9]/g, "") || displayRef;
+  // Same query shape as BallyPay checkout (pa raw, then pn, mc, am, cu, tr, tn)
   const Se =
     "pa=" + vpa +
-    "&pn=" + encodeURIComponent(pnSafe) +
+    "&pn=" + pnSafe +
+    "&mc=7372" +
     "&am=" + amStr +
     "&cu=INR" +
-    "&tr=" + displayRef +
-    "&tn=" + encodeURIComponent("Order " + displayRef) +
-    "&mc=5411";
+    "&tr=" + trSafe +
+    "&tn=OrderPayment";
 
   const upiPay = "upi://pay?" + Se;
   const phonepePay = "phonepe://pay?" + Se;
