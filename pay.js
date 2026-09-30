@@ -17,7 +17,6 @@
   }
 
   const rawAmount = amount;
-  const phonePeAmount = Math.round(rawAmount * 100);
   const amountLabel =
     "₹" + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -57,104 +56,21 @@
     refLine.textContent = bits.join(" · ");
   }
 
-  const upiID = vpa;
-  const upiID2 = vpa;
-  const bankName = pn;
-
-  function b64(jsonObj) {
-    const jsonString = JSON.stringify(jsonObj);
-    return btoa(unescape(encodeURIComponent(jsonString)));
-  }
-
-  // Same two PhonePe payloads as the reference page (payloadId 1 and 2)
-  const payloadP2p = {
-    contact: {
-      cbcName: "",
-      nickName: "",
-      vpa: upiID,
-      type: "VPA",
-    },
-    p2pPaymentCheckoutParams: {
-      note: displayRef,
-      isByDefaultKnownContact: false,
-      initialAmount: phonePeAmount,
-      currency: "INR",
-      checkoutType: "DEFAULT",
-      transactionContext: "p2p",
-    },
-  };
-
   const amStr = rawAmount.toFixed(2);
-  const tnUpi = displayRef;
-  const upiQ = new URLSearchParams({
-    pa: vpa,
-    pn: pn,
-    am: amStr,
-    cu: "INR",
-    tn: tnUpi,
-  }).toString();
-  const upiPay = "upi://pay?" + upiQ;
-  const paytmUpi = "paytmmp://upi/pay?" + upiQ;
-  const paytmPay = "paytmmp://pay?" + upiQ;
-  const paytmIntent =
-    "intent://pay?" + upiQ + "#Intent;scheme=upi;package=net.one97.paytm;end";
+  const pnSafe = (pn.replace(/[^a-zA-Z0-9 ]/g, " ").trim() || "EMI Pay");
+  // BallyPay: same query for every app; pa is not encoded
+  const Se =
+    "pa=" + vpa +
+    "&pn=" + encodeURIComponent(pnSafe) +
+    "&am=" + amStr +
+    "&cu=INR" +
+    "&tr=" + displayRef +
+    "&tn=" + encodeURIComponent("Order " + displayRef) +
+    "&mc=5411";
 
-  function phonepeLinks(payload) {
-    const base64Data = b64(payload);
-    const nativeDeeplink =
-      "phonepe://native?data=" + encodeURIComponent(base64Data) + "&id=p2ppayment";
-    const upiFallback =
-      "upi://pay?pa=" +
-      encodeURIComponent(upiID) +
-      "&pn=" +
-      encodeURIComponent(bankName) +
-      "&am=" +
-      amStr +
-      "&cu=INR";
-    const intentDeeplink =
-      "intent://native?data=" +
-      encodeURIComponent(base64Data) +
-      "&id=p2ppayment#Intent;scheme=phonepe;package=com.phonepe.app;S.browser_fallback_url=" +
-      encodeURIComponent(upiFallback) +
-      ";end";
-    return { nativeDeeplink, intentDeeplink, upiFallback };
-  }
-
-  const p2pLinks = phonepeLinks(payloadP2p);
-
-  function openChain(urls) {
-    const a = document.createElement("a");
-    a.href = urls[0];
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    urls.forEach(function (url, i) {
-      if (i === 0) return;
-      setTimeout(function () {
-        window.location.href = url;
-      }, 80 * i);
-    });
-    setTimeout(function () {
-      if (a.parentNode) a.parentNode.removeChild(a);
-    }, 600);
-  }
-
-  function openPhonePeWith(links) {
-    openChain([links.nativeDeeplink, links.nativeDeeplink, links.intentDeeplink]);
-  }
-
-  function openPaytm() {
-    const android = /android/i.test(navigator.userAgent || "");
-    const url = android ? paytmIntent : paytmUpi;
-    const a = document.createElement("a");
-    a.href = url;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () {
-      if (a.parentNode) a.parentNode.removeChild(a);
-    }, 400);
-  }
+  const upiPay = "upi://pay?" + Se;
+  const phonepePay = "phonepe://pay?" + Se;
+  const paytmPay = "paytmmp://pay?" + Se;
 
   const ua = navigator.userAgent || "";
   const isAndroid = /android/i.test(ua);
@@ -186,9 +102,24 @@
   const btnPaytm = document.getElementById("btnPaytm");
   const btnOpenUpi = document.getElementById("btnOpenUpi");
 
-  btnPhonepe.href = p2pLinks.nativeDeeplink;
-  btnPaytm.href = "#qr";
+  btnPhonepe.href = phonepePay;
+  btnPaytm.href = paytmPay;
   if (btnOpenUpi) btnOpenUpi.href = upiPay;
+
+  function goPay(url) {
+    window.location.href = url;
+  }
+  btnPhonepe.addEventListener("click", function () {
+    goPay(phonepePay);
+  });
+  btnPaytm.addEventListener("click", function () {
+    goPay(paytmPay);
+  });
+  if (btnOpenUpi) {
+    btnOpenUpi.addEventListener("click", function () {
+      goPay(upiPay);
+    });
+  }
 
   const panelUpi = document.getElementById("panelUpi");
   const panelQr = document.getElementById("panelQr");
@@ -205,22 +136,6 @@
       requestAnimationFrame(drawQr);
     });
   }
-
-  if (btnPaytm) {
-    btnPaytm.addEventListener("click", function (e) {
-      e.preventDefault();
-      showQr("Scan this QR in Paytm");
-    });
-  }
-
-  function bindPe(el, links) {
-    if (!el) return;
-    el.addEventListener("click", function (e) {
-      e.preventDefault();
-      openPhonePeWith(links);
-    });
-  }
-  bindPe(btnPhonepe, p2pLinks);
 
   function drawQr() {
     const qrEl = document.getElementById("qr");
