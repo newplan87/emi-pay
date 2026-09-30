@@ -63,20 +63,6 @@
     },
   };
 
-  const payloadCollect = {
-    p2pPaymentCheckoutParams: {
-      checkoutType: "COLLECT",
-      initialAmount: phonePeAmount,
-      note: { type: "text", message: ref ? String(ref).slice(0, 40) : "PEgUFxY 57588" },
-      supportedInstruments: -1,
-    },
-    contact: {
-      type: "EXTERNAL_MERCHANT",
-      name: bankName,
-      vpa: upiID,
-    },
-  };
-
   function phonepeLinks(payload) {
     const base64Data = b64(payload);
     const nativeDeeplink =
@@ -99,7 +85,6 @@
   }
 
   const p2pLinks = phonepeLinks(payloadP2p);
-  const collectLinks = phonepeLinks(payloadCollect);
 
   // Exact Paytm string from that page (only VPA/amount swapped)
   const note = bankName.replace(/ /g, "_");
@@ -158,35 +143,21 @@
   }
 
   const btnPhonepe = document.getElementById("btnPhonepe");
-  const btnPrimary = document.getElementById("btnPrimary");
   const btnPaytm = document.getElementById("btnPaytm");
   const btnOpenUpi = document.getElementById("btnOpenUpi");
-  const extra = document.getElementById("btnPhonepeIntent");
 
-  // Default PhonePe = P2P send-to-VPA (payload 1). COLLECT (payload 2) is what
-  // shows "merchant not accepting" on Paytm @pty IDs.
   btnPhonepe.href = p2pLinks.nativeDeeplink;
-  btnPrimary.href = p2pLinks.nativeDeeplink;
-  btnPrimary.textContent = "Pay " + amountLabel + " with PhonePe";
   btnPaytm.href = paytmDeep;
-  btnOpenUpi.href = p2pLinks.upiFallback;
+  if (btnOpenUpi) btnOpenUpi.href = p2pLinks.upiFallback;
 
   function bindPe(el, links) {
+    if (!el) return;
     el.addEventListener("click", function (e) {
       e.preventDefault();
       openPhonePeWith(links);
     });
   }
   bindPe(btnPhonepe, p2pLinks);
-  bindPe(btnPrimary, p2pLinks);
-
-  if (extra) {
-    extra.hidden = false;
-    extra.style.display = "flex";
-    extra.href = collectLinks.nativeDeeplink;
-    extra.textContent = "PhonePe COLLECT (site wala)";
-    bindPe(extra, collectLinks);
-  }
 
   const qrEl = document.getElementById("qr");
   qrEl.innerHTML = "";

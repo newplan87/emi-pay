@@ -113,4 +113,30 @@ small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .meta div { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; }
 .meta span { color: #94a3b8; }
 .meta strong { font-weight: 600; color: #334155; text-align: right; word-break: break-all; }
-.pay-foot { padding: 0 20px 16px; font-size: 11px; color: var(--muted); line-height: 1.5; }
+.hero-upi {
+  background: #fff;
+  color: var(--ink);
+  border-bottom: 1px solid #eef2f6;
+}
+.hero-upi .eyebrow { color: var(--muted); }
+.hero-upi h1 { color: var(--ink); font-size: 18px; font-weight: 600; }
+.hero-upi .amount { color: var(--ink); font-size: 32px; }
+.hero-upi .ref-line { color: var(--muted); }
+.upi-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 0 0 10px; font-size: 11px; font-weight: 800;
+  letter-spacing: 0.12em; color: #097939;
+}
+.logo-wrap {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.logo-wrap img { width: 26px; height: 26px; display: block; }
+.logo-wrap.pe { background: #5f259f; }
+.logo-wrap.pe img { filter: brightness(0) invert(1); }
+.logo-wrap.pt { background: #fff; border: 1px solid #e2e8f0; }
+.logo-wrap.pt img { width: 30px; height: 30px; }
+.apps { margin-bottom: 14px; }
+.app { min-height: 64px; font-size: 15px; }
+#chromeOpen[hidden] { display: none !important; }
+#chromeOpen { margin-bottom: 12px; }
