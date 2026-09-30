@@ -126,10 +126,10 @@
   if (hint) {
     if (!isMobile) {
       hint.hidden = false;
-      hint.textContent = "Phone Chrome se kholo. Laptop pe Scan QR.";
+      hint.textContent = "Open this page in Chrome on your phone to use PhonePe or Paytm. On a computer, scan the QR code.";
     } else if (inApp) {
       hint.hidden = false;
-      hint.textContent = "WhatsApp ke andar se nahi — Open in Chrome.";
+      hint.textContent = "UPI apps cannot open inside this browser. Tap Continue in Chrome, then pay.";
     }
   }
 

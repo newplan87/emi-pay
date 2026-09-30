@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>EMI Pay — Checkout</title>
+  <title>EMI Pay</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
   <main class="wrap">
@@ -14,36 +14,30 @@
         <div class="hero-row">
           <div class="mark">E</div>
           <div>
-            <p class="eyebrow">After purchase</p>
+            <p class="eyebrow">UPI checkout</p>
             <h1>EMI Pay</h1>
           </div>
         </div>
         <p class="hero-copy">
-          Amount yahan type nahi hota. Product price tumhari website pe hai.
-          Buy ke baad customer is checkout pe aata hai — UPI / QR se pay.
+          After the customer places an order on your site, send them here with the order amount and reference. They complete payment with PhonePe, Paytm, or QR.
         </p>
       </header>
       <div class="body">
-        <p class="section-title">Tumhari site pe (Buy button)</p>
-        <p class="hint">Price + order id apne cart/order se bhejo. Gateway amount create nahi karta.</p>
+        <p class="section-title">Add to your website</p>
         <div class="url-box" id="embedBox" style="white-space:pre-wrap;font-size:11px"></div>
-        <p class="hint" style="margin-top:14px">Direct link example:</p>
+        <p class="hint" style="margin-top:14px">Payment URL</p>
         <div class="url-box" style="font-size:11px">
-          https://newplan87.github.io/emi-pay/pay.html?am=PRICE&amp;ref=ORDER_ID
+          https://newplan87.github.io/emi-pay/pay.html?am=AMOUNT&amp;ref=ORDER_ID
         </div>
-        <p class="hint">Demo shop: <a href="my-site.html">my-site.html</a></p>
+        <p class="hint"><a href="my-site.html">View sample checkout</a></p>
       </div>
     </div>
-    <footer class="foot">EMI Pay · amount comes from your product page</footer>
   </main>
   <script>
     var origin = location.origin + location.pathname.replace(/[^/]+$/, "");
     document.getElementById("embedBox").textContent =
-      '<script src="' + origin + 'checkout.js"><\/script>\n\n' +
-      '// product price from YOUR site, not this gateway\n' +
-      'var price = 2499.00;      // cart total\n' +
-      'var orderId = "ORD-991";  // your order id\n' +
-      'EmiPay.open({ amount: price, ref: orderId });';
+      '<script src="' + origin + 'checkout.js"><\/script>\n' +
+      'EmiPay.open({ amount: 2499.00, ref: "ORD-991" });';
   </script>
 </body>
 </html>

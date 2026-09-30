@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>UPI Payment</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=9" />
+  <link rel="stylesheet" href="style.css?v=10" />
   <script src="qrcode.min.js"></script>
 </head>
 <body>
@@ -13,7 +13,7 @@
     <div class="card" id="payCard">
       <header class="hero hero-upi">
         <p class="upi-badge"><img src="logos/upi.svg" alt="" width="36" height="14" /> UPI</p>
-        <p class="eyebrow">Paying</p>
+        <p class="eyebrow">Pay to</p>
         <h1 id="payeeName">EMI Pay</h1>
         <p class="amount" id="amountDisplay">—</p>
         <p class="ref-line" id="refLine" hidden></p>
@@ -24,7 +24,7 @@
       </div>
       <div class="body" id="panelUpi">
         <p class="hint" id="appHint" hidden></p>
-        <a id="chromeOpen" class="btn-ghost block" hidden href="#">Open in Chrome</a>
+        <a id="chromeOpen" class="btn-ghost block" hidden href="#">Continue in Chrome</a>
         <div class="apps">
           <a id="btnPhonepe" class="app" href="#">
             <span class="logo-wrap pe"><img src="logos/phonepe.svg" alt="PhonePe" /></span>
@@ -42,16 +42,16 @@
       </div>
       <div class="body" id="panelQr" hidden>
         <div class="qr-wrap"><div id="qr"></div></div>
-        <a id="btnOpenUpi" class="btn-primary block" href="#">Open UPI app</a>
+        <a id="btnOpenUpi" class="btn-primary block" href="#">Pay with UPI</a>
       </div>
     </div>
     <div class="card" id="errCard" hidden>
       <div class="body">
-        <p class="err">Invalid payment link.</p>
+        <p class="err">This payment link is missing an amount.</p>
       </div>
     </div>
   </main>
-  <script src="config.js?v=9"></script>
-  <script src="pay.js?v=9"></script>
+  <script src="config.js?v=10"></script>
+  <script src="pay.js?v=10"></script>
 </body>
 </html>
