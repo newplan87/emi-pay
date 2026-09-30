@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>UPI Payment</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
   <script src="qrcode.min.js"></script>
 </head>
 <body>
@@ -20,38 +20,44 @@
       </header>
       <div class="tabs">
         <button type="button" class="tab active" data-tab="upi">Apps</button>
-        <button type="button" class="tab" data-tab="qr">QR</button>
+        <button type="button" class="tab" data-tab="qr">QR code</button>
       </div>
       <div class="body" id="panelUpi">
         <p class="hint" id="appHint" hidden></p>
         <a id="chromeOpen" class="btn-ghost block" hidden href="#">Continue in Chrome</a>
         <div class="apps">
           <a id="btnPhonepe" class="app" href="#">
-            <span class="logo-wrap pe"><img src="logos/phonepe.svg" alt="PhonePe" /></span>
+            <span class="logo-wrap pe"><img src="logos/phonepe.svg" alt="" /></span>
             PhonePe
           </a>
           <a id="btnPaytm" class="app" href="#">
-            <span class="logo-wrap pt"><img src="logos/paytm.svg" alt="Paytm" /></span>
+            <span class="logo-wrap pt"><img src="logos/paytm.svg" alt="" /></span>
             Paytm
           </a>
         </div>
+        <p class="field-label">UPI ID</p>
         <div class="vpa-row">
           <code id="vpaText"></code>
           <button type="button" id="copyVpa" class="btn-mini">Copy</button>
         </div>
       </div>
-      <div class="body" id="panelQr" hidden>
+      <div class="body is-off" id="panelQr">
         <div class="qr-wrap"><div id="qr"></div></div>
+        <p class="field-label">UPI ID</p>
+        <div class="vpa-row">
+          <code id="vpaTextQr"></code>
+          <button type="button" id="copyVpaQr" class="btn-mini">Copy</button>
+        </div>
         <a id="btnOpenUpi" class="btn-primary block" href="#">Pay with UPI</a>
       </div>
     </div>
-    <div class="card" id="errCard" hidden>
+    <div class="card is-off" id="errCard">
       <div class="body">
         <p class="err">This payment link is missing an amount.</p>
       </div>
     </div>
   </main>
-  <script src="config.js?v=11"></script>
-  <script src="pay.js?v=11"></script>
+  <script src="config.js?v=12"></script>
+  <script src="pay.js?v=12"></script>
 </body>
 </html>

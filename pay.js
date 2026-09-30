@@ -11,8 +11,8 @@
   const payCard = document.getElementById("payCard");
   const errCard = document.getElementById("errCard");
   if (!amount || amount <= 0) {
-    payCard.hidden = true;
-    errCard.hidden = false;
+    payCard.classList.add("is-off");
+    errCard.classList.remove("is-off");
     return;
   }
 
@@ -24,6 +24,8 @@
   document.getElementById("payeeName").textContent = pn;
   document.getElementById("amountDisplay").textContent = amountLabel;
   document.getElementById("vpaText").textContent = vpa;
+  const vpaQr = document.getElementById("vpaTextQr");
+  if (vpaQr) vpaQr.textContent = vpa;
 
   const refLine = document.getElementById("refLine");
   const bits = [];
@@ -157,27 +159,53 @@
   }
   bindPe(btnPhonepe, p2pLinks);
 
-  const qrEl = document.getElementById("qr");
-  if (qrEl && typeof QRCode === "function") {
+  function drawQr() {
+    const qrEl = document.getElementById("qr");
+    if (!qrEl) return;
     qrEl.innerHTML = "";
-    new QRCode(qrEl, {
-      text: p2pLinks.upiFallback,
-      width: 220,
-      height: 220,
-      colorDark: "#002E6E",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.M,
-    });
+    if (typeof QRCode === "function") {
+      new QRCode(qrEl, {
+        text: p2pLinks.upiFallback,
+        width: 220,
+        height: 220,
+        colorDark: "#002E6E",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+    }
+    if (!qrEl.querySelector("canvas, img, table")) {
+      const img = document.createElement("img");
+      img.width = 220;
+      img.height = 220;
+      img.alt = "UPI QR";
+      img.src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
+        encodeURIComponent(p2pLinks.upiFallback);
+      qrEl.appendChild(img);
+    }
   }
 
-  document.getElementById("copyVpa").addEventListener("click", async function () {
-    try {
-      await navigator.clipboard.writeText(vpa);
-      this.textContent = "Copied";
-      const btn = this;
-      setTimeout(function () { btn.textContent = "Copy"; }, 1200);
-    } catch (_) {}
-  });
+  function copyUpi(btn) {
+    const text = vpa;
+    const done = function () {
+      if (!btn) return;
+      const prev = btn.textContent;
+      btn.textContent = "Copied";
+      setTimeout(function () { btn.textContent = prev; }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () {
+        window.prompt("UPI ID", text);
+      });
+      return;
+    }
+    window.prompt("UPI ID", text);
+  }
+
+  const copyA = document.getElementById("copyVpa");
+  const copyB = document.getElementById("copyVpaQr");
+  if (copyA) copyA.addEventListener("click", function () { copyUpi(copyA); });
+  if (copyB) copyB.addEventListener("click", function () { copyUpi(copyB); });
 
   const panelUpi = document.getElementById("panelUpi");
   const panelQr = document.getElementById("panelQr");
@@ -186,8 +214,13 @@
       document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
       tab.classList.add("active");
       const which = tab.getAttribute("data-tab");
-      panelUpi.hidden = which !== "upi";
-      panelQr.hidden = which !== "qr";
+      panelUpi.classList.toggle("is-off", which !== "upi");
+      panelQr.classList.toggle("is-off", which !== "qr");
+      if (which === "qr") {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(drawQr);
+        });
+      }
     });
   });
 })();

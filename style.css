@@ -139,4 +139,10 @@ small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .apps { margin-bottom: 14px; }
 .app { min-height: 64px; font-size: 15px; }
 #chromeOpen[hidden] { display: none !important; }
-#chromeOpen { margin-bottom: 12px; }
+.field-label {
+  margin: 4px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.is-off { display: none !important; }
